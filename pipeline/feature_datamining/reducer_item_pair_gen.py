@@ -11,7 +11,6 @@ from itertools import groupby
 from operator import itemgetter
 import sys, json, datetime, uuid, os
  
-
 dictionary_info={}
 for line in open('dictionary_info.txt'):
     sp = line.strip().split('\t')
@@ -21,6 +20,67 @@ media_doc_info_dict={}
 class Media_doc_info(object): 
     def __init__(self):
         self.subcategory=[]
+        self.category=''
+        self.area=''
+
+    def build_category_subcategory_area(self, dictionary_info):
+        res=[]
+        if len(self.category) == 0:
+            return res
+        for sub in self.subcategory:
+            category_name = dictionary_info[self.category]
+            subcategory_name = ''
+            if sub in dictionary_info:
+                subcategory_name = dictionary_info[sub]
+            area_name = ''
+            if self.area in dictionary_info:
+                area_name = dictionary_info[self.area]
+            feature = category_name+'/'+subcategory_name+'/'+area_name
+            res.append(feature)
+        return res
+
+    def build_category_subcategory(self, dictionary_info):
+        res=[]
+        if len(self.category) == 0:
+            return res
+        for sub in self.subcategory:
+            category_name = dictionary_info[self.category]
+            subcategory_name = ''
+            if sub in dictionary_info:
+                subcategory_name = dictionary_info[sub]
+            feature = category_name+'/'+subcategory_name
+            res.append(feature)
+        return res
+
+    def build_category_area(self, dictionary_info):
+        res=[]
+        if len(self.category) == 0:
+            return res
+        category_name = dictionary_info[self.category]
+        area_name = ''
+        if self.area in dictionary_info:
+            area_name = dictionary_info[self.area]
+        feature = category_name + '/' + area_name
+        res.append(feature)
+        return res
+
+
+    def build_category(self, dictionary_info):
+        res=[]
+        if len(self.category) == 0:
+            return res
+        res.append(dictionary_info[self.category])
+        return res
+
+    def build_subcategory(self, dictionary_info):
+        res=[]
+        for sub in self.subcategory:
+            if sub in dictionary_info:
+                subcategory_name = dictionary_info[sub]
+                res.append(subcategory_name)
+        return res
+
+
 
 for line in open("media_info.txt"):
     sp = line.strip().split('\t')
@@ -28,7 +88,12 @@ for line in open("media_info.txt"):
         continue
     id = sp[0]
     media_doc_info = Media_doc_info()
-    media_doc_info.subcategory = sp[1].split(',')
+    if sp[1] != 'NULL':
+        media_doc_info.subcategory = sp[1].strip(',').split(',')
+    if sp[2] != 'NULL':
+        media_doc_info.category=sp[2]
+    if sp[3] != 'NULL':
+        media_doc_info.area=sp[3].strip(',').split(',')[0]
     media_doc_info_dict[id] = media_doc_info
 
 
@@ -60,9 +125,8 @@ def main(separator='\t'):
                 continue
             if sp[1] in media_doc_info_dict:
                 media_doc_info = media_doc_info_dict[sp[1]]
-                for sub_category in media_doc_info.subcategory:
-                    if sub_category not in dictionary_info:
-                        continue
+                res_list=media_doc_info.build_category_area(dictionary_info)
+                for feature_name in res_list:
                    
                     j = i + 1
                     while j < group_size:
@@ -72,11 +136,8 @@ def main(separator='\t'):
                             continue
                         if sp_1[1] in media_doc_info_dict:
                             media_doc_info_1 = media_doc_info_dict[sp_1[1]]
-                            for sub_category_1 in media_doc_info_1.subcategory:
-                                if sub_category_1 not in dictionary_info:
-                                    continue
-                                feature_name = dictionary_info[sub_category]
-                                feature_name_1 = dictionary_info[sub_category_1]
+                            res_list1=media_doc_info.build_category_area(dictionary_info)
+                            for feature_name_1 in res_list1:
                                 if feature_name < feature_name_1 :
                                     output_key = feature_name + '_' + feature_name_1
                                 elif feature_name_1 < feature_name :

@@ -19,9 +19,10 @@ fi
 
 
 rm -f media_info.txt dictionary_info.txt
-mysql -h 117.121.54.220 -P 3308 -u tuijian_read -p"f6w6FSewb2v5gpcy7PGT" -e "use mms;select concat('4_',id), sub_category from con_video_info where can_search = 1 and play_platform != '' and not isnull(play_platform) and site like '%650001%'  and source_id!=200003" > media_info.txt
-mysql -h 117.121.54.220 -P 3308 -u tuijian_read -p"f6w6FSewb2v5gpcy7PGT" -e "use mms;select concat('1_',id), sub_category from con_album_info where can_search = 1 and play_platform != '' and not isnull(play_platform) and site like '%650001%'  and source_id!=200003" >> media_info.txt
+mysql -h 117.121.54.220 -P 3308 -u tuijian_read -p"f6w6FSewb2v5gpcy7PGT" -e "use mms;select concat('4_',id), sub_category, category, area from con_video_info where can_search = 1 and play_platform != '' and not isnull(play_platform) and site like '%650001%'  and source_id!=200003" > media_info.txt
+mysql -h 117.121.54.220 -P 3308 -u tuijian_read -p"f6w6FSewb2v5gpcy7PGT" -e "use mms;select concat('1_',id), sub_category, category, area from con_album_info where can_search = 1 and play_platform != '' and not isnull(play_platform) and site like '%650001%'  and source_id!=200003" >> media_info.txt
 mysql -h 117.121.54.220 -P 3308 -u tuijian_read -p"f6w6FSewb2v5gpcy7PGT" -e "use mms;select id, value from db_dictionary_info" > dictionary_info.txt
+
 
 # statistic
 
@@ -30,7 +31,7 @@ cnt=0
 total=0
 server_log_path_with_input=""
 mining_date=$data_start
-while [ $cnt -lt 60 ]
+while [ $cnt -lt 90 ]
 do
     mining_date=`date -d $mining_date' -1 day' +%Y%m%d`
     server_log_path_one_day=/data/rec/log/server_log/online_by_day/$mining_date/*/sarrs_*/*
@@ -64,7 +65,7 @@ itemcf_res=/data/rec/ctr_predict/data_mining/feature_mining/itemcf_res/
 hadoop fs -rm -r -skipTrash $itemcf_res
 hadoop jar /usr/local/hadoop/share/hadoop/tools/lib/hadoop-streaming-2.6.0.jar -D mapred.output.compress=0 -D mapred.reduce.tasks=100 -input $itemcf_pair -output $itemcf_res -mapper mapper_output_throught.py -reducer reducer_itemcf_gen.py -file mapper_output_throught.py -file reducer_itemcf_gen.py -file user_weight.txt -file feature_count.txt
 
-post process
+#post process
 
 cnt=1
 while [ $cnt -lt 15 ]
